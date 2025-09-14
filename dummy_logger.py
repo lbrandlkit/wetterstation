@@ -23,7 +23,7 @@ def init_db():
 def log_dummy_data():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = datetime.now().isoformat()
     temperature = round(random.uniform(18, 25), 2)
     humidity = round(random.uniform(0.3, 0.6), 2)
     pressure = round(random.uniform(990, 1020), 2)
