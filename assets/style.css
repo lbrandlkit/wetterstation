@@ -1,0 +1,26 @@
+/* Ausgewählte Option in der Dropdown-Box */
+.dropdown-auto-width .Select-value-label {
+    color: #ffffff !important;
+}
+
+/* Sichtbare Dropdown-Box */
+.dropdown-auto-width .Select-control {
+    background-color: #000000 !important;
+    border-color: #333333 !important;
+}
+
+/* Aufklappbares Menü */
+.dropdown-auto-width .Select-menu-outer {
+    background-color: #000000 !important;
+}
+
+/* Optionen im Menü */
+.dropdown-auto-width .Select-option {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Platzhalter */
+.dropdown-auto-width .Select-placeholder {
+    color: #ffffff !important;
+}

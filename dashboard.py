@@ -5,9 +5,7 @@ import plotly.express as px
 from dash import Dash, dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
-
-# API-Adresse aus Umgebungsvariable oder Default
+# API-Adresse flexibel
 API_HOST = os.environ.get("WEATHER_API_HOST", "wetter")
 API_URL = f"http://{API_HOST}:5000/api/data"
 
@@ -19,22 +17,51 @@ TIME_RANGES = {
     "7 Tage": {"days": 7}
 }
 
-app = Dash(__name__)
+# Dash App mit Bootstrap Theme
+app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 app.title = "Wetterstation Dashboard"
 
-app.layout = html.Div([
-    html.H1("Wetterstation Dashboard"),
-    html.Label("Zeitraum auswählen:"),
-    dcc.Dropdown(
-        id="time-range",
-        options=[{"label": k, "value": k} for k in TIME_RANGES.keys()],
-        value="1 Stunde",
-        clearable=False
-    ),
-    dcc.Graph(id="temp-plot"),
-    dcc.Graph(id="hum-plot"),
-    dcc.Graph(id="press-plot")
-])
+# Dummy-Data für initiale Anzeige (verhindert weißen Bildschirm)
+import datetime
+dummy_time = [pd.Timestamp.now()]
+dummy_df = pd.DataFrame({
+    "timestamp": dummy_time,
+    "temperature": [None],
+    "humidity": [None],
+    "pressure": [None]
+})
+
+temp_fig = px.line(dummy_df, x="timestamp", y="temperature",
+                   title="Temperatur (°C)", line_shape='spline', template='plotly_dark')
+hum_fig = px.line(dummy_df, x="timestamp", y="humidity",
+                  title="Luftfeuchtigkeit (%)", line_shape='spline', template='plotly_dark')
+press_fig = px.line(dummy_df, x="timestamp", y="pressure",
+                    title="Luftdruck (hPa)", line_shape='spline', template='plotly_dark')
+
+app.layout = dbc.Container([
+    dbc.Row(dbc.Col(html.H1("Wetterstation Dashboard", className="text-center my-4"), width=12)),
+    
+    dbc.Row([
+        dbc.Col(
+            dcc.Dropdown(
+                id="time-range",
+                options=[{"label": k, "value": k} for k in TIME_RANGES.keys()],
+                value="1 Stunde",
+                clearable=False,
+                style={"width": "200px", "minWidth": "150px"},  # automatisch breites Dropdown
+                # style={"width": "200px", "backgroundColor": "#000000", "color": "#ffffff"},  # automatisch breites Dropdown
+                className="dropdown-auto-width",
+            ), width=4
+        )
+    ], className="mb-3"),
+    
+    dbc.Row([
+        dbc.Col(dcc.Graph(id="temp-plot", figure=temp_fig), xs=12, sm=12, md=12, lg=4, xl=4),
+        dbc.Col(dcc.Graph(id="hum-plot", figure=hum_fig), xs=12, sm=12, md=12, lg=4, xl=4),
+        dbc.Col(dcc.Graph(id="press-plot", figure=press_fig), xs=12, sm=12, md=12, lg=4, xl=4)
+    ])
+
+], fluid=True)
 
 def fetch_data(params):
     try:
@@ -57,16 +84,25 @@ def update_plots(selected_range):
     df = fetch_data(params)
 
     if df.empty:
-        empty_fig = px.scatter(title="Keine Daten verfügbar")
-        return empty_fig, empty_fig, empty_fig
+        # Dummy-Data erneut zurückgeben, falls API leer
+        return temp_fig, hum_fig, press_fig
 
     df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-    temp_fig = px.line(df, x="timestamp", y="temperature_C", title="Temperatur (°C)")
-    hum_fig = px.line(df, x="timestamp", y="humidity", title="Luftfeuchtigkeit (%)")
-    press_fig = px.line(df, x="timestamp", y="pressure_hPa", title="Luftdruck (hPa)")
+    temp_fig_new = px.line(
+        df, x="timestamp", y="temperature_C", title="Temperatur (°C)",
+        line_shape='spline', template='plotly_dark', color_discrete_sequence=['#FF5733']
+    )
+    hum_fig_new = px.line(
+        df, x="timestamp", y="humidity", title="Luftfeuchtigkeit (%)",
+        line_shape='spline', template='plotly_dark', color_discrete_sequence=['#33C1FF']
+    )
+    press_fig_new = px.line(
+        df, x="timestamp", y="pressure_hPa", title="Luftdruck (hPa)",
+        line_shape='spline', template='plotly_dark', color_discrete_sequence=['#75FF33']
+    )
 
-    return temp_fig, hum_fig, press_fig
+    return temp_fig_new, hum_fig_new, press_fig_new
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8050, debug=True)
