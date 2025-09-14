@@ -13,7 +13,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT,
             temperature_C REAL,
-            humidity_% REAL,
+            humidity REAL,
             pressure_hPa REAL
         )
     """)
@@ -25,10 +25,10 @@ def log_dummy_data():
     c = conn.cursor()
     timestamp = datetime.utcnow().isoformat()
     temperature = round(random.uniform(18, 25), 2)
-    humidity = round(random.uniform(30, 60), 2)
+    humidity = round(random.uniform(0.3, 0.6), 2)
     pressure = round(random.uniform(990, 1020), 2)
     c.execute(
-        "INSERT INTO measurements (timestamp, temperature_C, humidity_%, pressure_hPa) VALUES (?, ?, ?, ?)",
+        "INSERT INTO measurements (timestamp, temperature_C, humidity, pressure_hPa) VALUES (?, ?, ?, ?)",
         (timestamp, temperature, humidity, pressure)
     )
     conn.commit()
