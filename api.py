@@ -23,7 +23,7 @@ def get_latest_measurement():
 
 def get_measurements(minutes=0, hours=0, days=0):
     delta = timedelta(days=days, hours=hours, minutes=minutes)
-    since = datetime.utcnow() - delta
+    since = datetime.now() - delta
 
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()

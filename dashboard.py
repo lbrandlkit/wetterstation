@@ -3,6 +3,9 @@ import requests
 import pandas as pd
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output
+import dash_bootstrap_components as dbc
+
+app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 
 # API-Adresse aus Umgebungsvariable oder Default
 API_HOST = os.environ.get("WEATHER_API_HOST", "wetter")
@@ -59,9 +62,9 @@ def update_plots(selected_range):
 
     df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-    temp_fig = px.line(df, x="timestamp", y="temperature", title="Temperatur (°C)")
+    temp_fig = px.line(df, x="timestamp", y="temperature_C", title="Temperatur (°C)")
     hum_fig = px.line(df, x="timestamp", y="humidity", title="Luftfeuchtigkeit (%)")
-    press_fig = px.line(df, x="timestamp", y="pressure", title="Luftdruck (hPa)")
+    press_fig = px.line(df, x="timestamp", y="pressure_hPa", title="Luftdruck (hPa)")
 
     return temp_fig, hum_fig, press_fig
 
