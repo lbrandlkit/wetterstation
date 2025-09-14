@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-DB_FILE = "/opt/wetterstation/data/weather.db"  # Pfad zu deiner DB
+DB_FILE = "/opt/wetterstation/data/bme280_data.db"  # Pfad zu deiner DB
 
 def get_latest_measurement():
     conn = sqlite3.connect(DB_FILE)
