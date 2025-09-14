@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 import sqlite3
 
-DB_FILE = "/opt/bme280/data/bme280_data.db"
+DB_FILE = "/opt/wetterstation/data/bme280_data.db"
 
 app = Flask(__name__)
 
