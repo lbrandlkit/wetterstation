@@ -9,15 +9,15 @@ DB_FILE = "/opt/wetterstation/data/bme280_data.db"  # Pfad zu deiner DB
 def get_latest_measurement():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT timestamp, temperature, humidity, pressure FROM measurements ORDER BY timestamp DESC LIMIT 1")
+    c.execute("SELECT timestamp, temperature_C, humidity, pressure_hPa FROM measurements ORDER BY timestamp DESC LIMIT 1")
     row = c.fetchone()
     conn.close()
     if row:
         return {
             "timestamp": row[0],
-            "temperature": row[1],
+            "temperature_C": row[1],
             "humidity": row[2],
-            "pressure": row[3]
+            "pressure_hPa": row[3]
         }
     return {}
 
@@ -28,7 +28,7 @@ def get_measurements(minutes=0, hours=0, days=0):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute("""
-        SELECT timestamp, temperature, humidity, pressure
+        SELECT timestamp, temperature_C, humidity, pressure_hPa
         FROM measurements
         WHERE timestamp >= ?
         ORDER BY timestamp ASC
@@ -39,9 +39,9 @@ def get_measurements(minutes=0, hours=0, days=0):
     return [
         {
             "timestamp": row[0],
-            "temperature": row[1],
+            "temperature_C": row[1],
             "humidity": row[2],
-            "pressure": row[3]
+            "pressure_hPa": row[3]
         } for row in rows
     ]
 
