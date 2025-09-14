@@ -1,12 +1,13 @@
+import os
 import requests
 import pandas as pd
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output
 
-# Adresse deines Pi-Servers
-API_URL = "http://192.168.178.44:5000/api/data"
+# API-Adresse aus Umgebungsvariable oder Default
+API_HOST = os.environ.get("WEATHER_API_HOST", "wetter")
+API_URL = f"http://{API_HOST}:5000/api/data"
 
-# Mapping Dropdown-Werte -> API Parameter
 TIME_RANGES = {
     "15 Minuten": {"minutes": 15},
     "1 Stunde": {"hours": 1},
@@ -16,17 +17,17 @@ TIME_RANGES = {
 }
 
 app = Dash(__name__)
+app.title = "Wetterstation Dashboard"
 
 app.layout = html.Div([
     html.H1("Wetterstation Dashboard"),
-
+    html.Label("Zeitraum auswählen:"),
     dcc.Dropdown(
         id="time-range",
         options=[{"label": k, "value": k} for k in TIME_RANGES.keys()],
         value="1 Stunde",
         clearable=False
     ),
-
     dcc.Graph(id="temp-plot"),
     dcc.Graph(id="hum-plot"),
     dcc.Graph(id="press-plot")
@@ -37,9 +38,7 @@ def fetch_data(params):
         response = requests.get(API_URL, params=params, timeout=5)
         response.raise_for_status()
         data = response.json()
-        if not data:
-            return pd.DataFrame()
-        return pd.DataFrame(data)
+        return pd.DataFrame(data) if data else pd.DataFrame()
     except Exception as e:
         print("Fehler beim API-Request:", e)
         return pd.DataFrame()
@@ -58,7 +57,6 @@ def update_plots(selected_range):
         empty_fig = px.scatter(title="Keine Daten verfügbar")
         return empty_fig, empty_fig, empty_fig
 
-    # Timestamp als Zeitachse konvertieren
     df["timestamp"] = pd.to_datetime(df["timestamp"])
 
     temp_fig = px.line(df, x="timestamp", y="temperature", title="Temperatur (°C)")

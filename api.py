@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-DB_FILE = "/opt/wetterstation/data/weather.db"
+DB_FILE = "/opt/wetterstation/data/weather.db"  # Pfad zu deiner DB
 
 def get_latest_measurement():
     conn = sqlite3.connect(DB_FILE)
@@ -22,14 +22,13 @@ def get_latest_measurement():
     return {}
 
 def get_measurements(minutes=0, hours=0, days=0):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-
     delta = timedelta(days=days, hours=hours, minutes=minutes)
     since = datetime.utcnow() - delta
 
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
     c.execute("""
-        SELECT timestamp, temperature, humidity, pressure 
+        SELECT timestamp, temperature, humidity, pressure
         FROM weather
         WHERE timestamp >= ?
         ORDER BY timestamp ASC
@@ -43,8 +42,7 @@ def get_measurements(minutes=0, hours=0, days=0):
             "temperature": row[1],
             "humidity": row[2],
             "pressure": row[3]
-        }
-        for row in rows
+        } for row in rows
     ]
 
 @app.route("/api/latest", methods=["GET"])
@@ -67,3 +65,4 @@ def data():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
