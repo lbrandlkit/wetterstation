@@ -1,0 +1,71 @@
+import requests
+import pandas as pd
+import plotly.express as px
+from dash import Dash, dcc, html, Input, Output
+
+# Adresse deines Pi-Servers
+API_URL = "http://192.168.178.44:5000/api/data"
+
+# Mapping Dropdown-Werte -> API Parameter
+TIME_RANGES = {
+    "15 Minuten": {"minutes": 15},
+    "1 Stunde": {"hours": 1},
+    "6 Stunden": {"hours": 6},
+    "1 Tag": {"days": 1},
+    "7 Tage": {"days": 7}
+}
+
+app = Dash(__name__)
+
+app.layout = html.Div([
+    html.H1("Wetterstation Dashboard"),
+
+    dcc.Dropdown(
+        id="time-range",
+        options=[{"label": k, "value": k} for k in TIME_RANGES.keys()],
+        value="1 Stunde",
+        clearable=False
+    ),
+
+    dcc.Graph(id="temp-plot"),
+    dcc.Graph(id="hum-plot"),
+    dcc.Graph(id="press-plot")
+])
+
+def fetch_data(params):
+    try:
+        response = requests.get(API_URL, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        if not data:
+            return pd.DataFrame()
+        return pd.DataFrame(data)
+    except Exception as e:
+        print("Fehler beim API-Request:", e)
+        return pd.DataFrame()
+
+@app.callback(
+    [Output("temp-plot", "figure"),
+     Output("hum-plot", "figure"),
+     Output("press-plot", "figure")],
+    [Input("time-range", "value")]
+)
+def update_plots(selected_range):
+    params = TIME_RANGES[selected_range]
+    df = fetch_data(params)
+
+    if df.empty:
+        empty_fig = px.scatter(title="Keine Daten verfügbar")
+        return empty_fig, empty_fig, empty_fig
+
+    # Timestamp als Zeitachse konvertieren
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+
+    temp_fig = px.line(df, x="timestamp", y="temperature", title="Temperatur (°C)")
+    hum_fig = px.line(df, x="timestamp", y="humidity", title="Luftfeuchtigkeit (%)")
+    press_fig = px.line(df, x="timestamp", y="pressure", title="Luftdruck (hPa)")
+
+    return temp_fig, hum_fig, press_fig
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8050, debug=True)
