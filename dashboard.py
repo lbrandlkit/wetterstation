@@ -17,9 +17,13 @@ TIME_RANGES = {
     "7 Tage": {"days": 7}
 }
 
+current_temp = 22.5
+current_hum = 55.0
+current_press = 1013.2
+
 # Dash App mit Bootstrap Theme
 app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
-app.title = "Wetterstation Dashboard"
+# app.title = "Wetterstation Dashboard"
 
 # Dummy-Data für initiale Anzeige (verhindert weißen Bildschirm)
 import datetime
@@ -38,8 +42,18 @@ hum_fig = px.line(dummy_df, x="timestamp", y="humidity",
 press_fig = px.line(dummy_df, x="timestamp", y="pressure",
                     title="Luftdruck (hPa)", line_shape='spline', template='plotly_dark')
 
+title = html.H2(
+    f"Wetterstation: {current_temp} °C  {current_hum} %  {current_press} hPa",
+    style={"color": "white", "textAlign": "center"}
+)
 app.layout = dbc.Container([
-    dbc.Row(dbc.Col(html.H1("Wetterstation Dashboard", className="text-center my-4"), width=12)),
+    # dbc.Row(dbc.Col(html.H1("Wetterstation Dashboard", className="text-center my-4"), width=12)),
+    dbc.Row([
+        dbc.Col([
+            title,
+            dcc.Interval(id="interval-component", interval=5*1000, n_intervals=0)
+        ], width=12)
+    ]),
     
     dbc.Row([
         dbc.Col(
@@ -76,7 +90,7 @@ def fetch_data(params):
 @app.callback(
     [Output("temp-plot", "figure"),
      Output("hum-plot", "figure"),
-     Output("press-plot", "figure")],
+     Output("press-plot", "figure"),],
     [Input("time-range", "value")]
 )
 def update_plots(selected_range):
@@ -103,6 +117,22 @@ def update_plots(selected_range):
     )
 
     return temp_fig_new, hum_fig_new, press_fig_new
+
+# def update_title(n):
+#     try:
+#         # API Request
+#         r = requests.get("http://wetter:5000/api/latest")  # URL anpassen
+#         data = r.json()
+#         temp = data["temperature_C"]
+#         hum = data["humidity"]
+#         press = data["pressure_hPa"]
+
+#         return f"Wetterstation - Temperatur: {temp} °C | " \
+#                f"Luftfeuchte: {hum} % | Luftdruck: {press} hPa"
+#     except Exception as e:
+#         # Fehlerfall: alte Werte oder Fehlermeldung anzeigen
+#         return f"Wetterstation - Daten nicht verfügbar ({e})"
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8050, debug=True)
