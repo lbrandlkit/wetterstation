@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from io import BytesIO
 import matplotlib.pyplot as plt
 
-DB_FILE = "data.db"
-TABLE = "your_table_name"  # <-- replace with your table name
+DB_FILE = "/opt/wetterstation/data/bme280_data.db"
+TABLE = "measurements"
 HOST = "0.0.0.0"
 PORT = 8000
 
