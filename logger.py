@@ -25,18 +25,25 @@ def file_creating():
 def log(bme280):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    timestamp = datetime.now().isoformat()
+
+    time = datetime.now().isoformat()
+    temperature = bme280.temperature
+    humidity = bme280.humidity
+    pressure = bme280.pressure
+
+
     c.execute(
         "INSERT INTO measurements (timestamp, temperature_C, humidity, pressure_hPa) VALUES (?, ?, ?, ?)",
-        (timestamp, bme280.temperature, bme280.humidity, bme280.pressure)
+        (time, temperature, humidity, pressure)
     )
     conn.commit()
     conn.close()
+    return f'{time}, {temperature}, {humidity}, {pressure}'
 
 if __name__ == "__main__":
     file_creating()
     i2c = busio.I2C(board.SCL, board.SDA)
     bme280 = basic.Adafruit_BME280_I2C(i2c, address=0x76)
     while True:
-        log(bme280)
+        print(log(bme280))
         time.sleep(10)
